@@ -1,0 +1,2 @@
+'use strict';
+(()=>{if(matchMedia('(prefers-reduced-motion: reduce)').matches)return;const observer=new IntersectionObserver(entries=>{for(const entry of entries)if(entry.isIntersecting){entry.target.classList.add('motion-ready');observer.unobserve(entry.target);}},{threshold:.1});function watch(){document.querySelectorAll('.shop-card,.coupon-ticket,.art-card,.goods-card,.section-heading').forEach(el=>{if(!el.dataset.motion){el.dataset.motion='1';observer.observe(el);}});}watch();window.addEventListener('kk-render',watch);window.addEventListener('shop-render',watch);})();
