@@ -34,5 +34,7 @@ window.KKPages = (() => {
   }
   async function saveProfile(){const user=await KKAuth.account();return database('members/'+encodeURIComponent(user.localId),'PUT',{displayName:(user.displayName||'꾸미콘 친구').slice(0,50)});}
   async function publicWorks(){const values=await database('publicWorks','GET',undefined,false);return KK.seed.filter(s=>values?.[s.id]).map(s=>({...s,name:String(values[s.id].name),description:String(values[s.id].description),visible:true}));}
-  return {overview,saveWork,saveProfile,publicWorks};
+  async function siteContent(){return await database('siteContent','GET',undefined,false)||{};}
+  async function saveContent(id,value){if(!/^[a-zA-Z0-9_-]{1,40}$/.test(id))throw Error('잘못된 콘텐츠 번호입니다.');return database('siteContent/'+id,'PUT',value);}
+  return {overview,saveWork,saveProfile,publicWorks,siteContent,saveContent};
 })();

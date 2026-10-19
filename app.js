@@ -10,11 +10,11 @@ $('#detail-dialog').addEventListener('click',e=>{if(e.target===$('#detail-dialog
 const emotions=['전체','인사','감사','응원','사랑','일상','직장'];
 $('#emotion-filters').innerHTML=emotions.map((e,i)=>`<button class="chip ${i?'':'active'}" aria-pressed="${!i}" data-emotion="${e}">${['✦','☀','♡','✧','♥','☕','▣'][i]} ${e}</button>`).join('');
 function render(){
- const works=KK.works().filter(x=>x.visible&&(selected==='전체'||x.emotion===selected)&&(!wishOnly||wishes.includes(x.id))&&`${x.name} ${x.description} ${x.emotion} 손꿈이`.includes(query));
+ const works=KK.works().map(x=>window.KKContentLookup?window.KKContentLookup(x):x).filter(x=>x.visible&&(selected==='전체'||x.emotion===selected)&&(!wishOnly||wishes.includes(x.id))&&`${x.name} ${x.description} ${x.emotion} 손꿈이`.includes(query));
  $('#result-count').textContent=`${wishOnly?'찜한 친구':'만나볼 친구'} ${works.length}명`;$('#wish-count').textContent=wishes.length;
  $('#wishlist').classList.toggle('selected',wishOnly);
  $('#art-grid').innerHTML=works.length?works.slice(0,limit).map(x=>`<article class="art-card"><div class="art-image" style="background:${x.bg}"><span class="sample-label">CONCEPT</span><button class="wish-button ${wishes.includes(x.id)?'saved':''}" data-wish="${x.id}" aria-label="${esc(x.name)} 찜" aria-pressed="${wishes.includes(x.id)}">${wishes.includes(x.id)?'♥':'♡'}</button><button class="art-open" data-work="${x.id}" aria-label="${esc(x.name)} 작품 상세 보기">${character(x.kind,x.name)}</button><span class="art-caption">${esc(x.description.split('.')[0])}</span></div><button class="art-title" data-work="${x.id}"><h3>${esc(x.name)}</h3><span>↗</span></button><p class="creator-name">손꿈이 <span>·</span> 캐릭터 기획</p><div class="tags"><span>#${x.emotion}</span><span>#마음한스푼</span></div></article>`).join(''):'<div class="empty-state"><span>♡</span><h3>아직 일치하는 친구가 없어요</h3><p>다른 이름이나 감정으로 찾아보세요.</p><button class="button white" id="reset-filters">전체 친구 보기</button></div>';
- $('#more-art').hidden=works.length<=limit;
+ $('#more-art').hidden=works.length<=limit;window.dispatchEvent(new Event('kk-render'));
 }
 function reset(){selected='전체';query='';wishOnly=false;limit=8;$('#search').value='';document.querySelectorAll('[data-emotion]').forEach(b=>{b.classList.toggle('active',b.dataset.emotion==='전체');b.setAttribute('aria-pressed',b.dataset.emotion==='전체');});render();}
 $('#emotion-filters').onclick=e=>{const b=e.target.closest('[data-emotion]');if(!b)return;selected=b.dataset.emotion;limit=8;document.querySelectorAll('[data-emotion]').forEach(x=>{x.classList.toggle('active',x===b);x.setAttribute('aria-pressed',x===b);});render();};
@@ -38,6 +38,7 @@ $('#menu-toggle').onclick=()=>{const open=$('#main-nav').classList.toggle('open'
 document.addEventListener('keydown',e=>{if(e.key==='Escape'){document.querySelectorAll('nav details').forEach(x=>x.open=false);$('#main-nav').classList.remove('open');$('#menu-toggle').setAttribute('aria-expanded','false');}});
 document.querySelectorAll('nav a,nav button').forEach(x=>x.addEventListener('click',()=>{$('#main-nav').classList.remove('open');$('#menu-toggle').setAttribute('aria-expanded','false');x.closest('details').open=false;}));
 $('#back-top').onclick=()=>window.scrollTo({top:0,behavior:'smooth'});window.addEventListener('scroll',()=>$('#back-top').hidden=window.scrollY===0,{passive:true});
+window.addEventListener('kk-content-ready',render);
 render();
 // 운영 모드에서는 읽기 실패나 빈 목록을 기획 예시로 대체하지 않습니다.
 KKAuth.settings().then(async config=>{
