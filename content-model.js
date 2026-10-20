@@ -25,6 +25,7 @@ window.KKContentModel=(()=>{
  add('privacy','개인정보 안내 · 운영 전 검토용','개인정보 처리 안내','회원가입 정보는 Firebase 인증 서비스에서 처리합니다. 비밀번호는 사이트 코드나 콘텐츠에 저장하지 않습니다. 프로필 저장 시 닉네임을 데이터베이스에 저장합니다. 찜 목록은 이 브라우저에 저장됩니다. 정식 보관·삭제 절차는 운영 전 확정이 필요합니다.');
  function safeImage(value){return typeof value==='string'&&( /^data:image\/(webp|png|jpeg);base64,[A-Za-z0-9+/=]+$/.test(value)||/^https:\/\/[^\s]+$/.test(value)||/^images\/[\w가-힣. -]+$/.test(value))?value:'';}
  function safeLink(value){try{const u=new URL(value);return u.protocol==='https:'?u.href:'';}catch{return '';}}
- function validate(v){if(!v.title?.trim()||v.title.length>100||v.summary.length>600||v.body.length>12000||v.alt.length>150||v.button.length>40)throw Error('제목 100자, 요약 600자, 본문 12,000자 이내로 입력해 주세요.');if(v.image&&(!safeImage(v.image)||v.image.length>450000))throw Error('지원하지 않는 이미지이거나 이미지 용량이 큽니다.');if(v.link&&!safeLink(v.link))throw Error('버튼 주소는 https://로 시작하는 올바른 주소를 입력해 주세요.');return v;}
- return {seeds,safeImage,safeLink,validate};
+ function tags(value){return [...new Set(String(value??'').split(/[,，\n]+/).map(x=>x.trim().replace(/^#+/,'')).filter(Boolean))];}
+ function validate(v){if(v.tags!==undefined&&(typeof v.tags!=='string'||v.tags.length>200||tags(v.tags).length>10||tags(v.tags).some(t=>t.length>20)))throw Error('태그는 쉼표로 구분해 10개까지, 각각 20자 이내로 입력해 주세요.');if(!v.title?.trim()||v.title.length>100||v.summary.length>600||v.body.length>12000||v.alt.length>150||v.button.length>40)throw Error('제목 100자, 요약 600자, 본문 12,000자 이내로 입력해 주세요.');if(v.image&&(!safeImage(v.image)||v.image.length>450000))throw Error('지원하지 않는 이미지이거나 이미지 용량이 큽니다.');if(v.link&&!safeLink(v.link))throw Error('버튼 주소는 https://로 시작하는 올바른 주소를 입력해 주세요.');return v;}
+ return {seeds,safeImage,safeLink,validate,tags};
 })();

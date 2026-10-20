@@ -21,16 +21,16 @@ window.KKPages = (() => {
     let claims;try{claims=JSON.parse(atob((await KKAuth.token()).split('.')[1].replace(/-/g,'+').replace(/_/g,'/')));}catch{throw Error('로그인 정보를 확인할 수 없습니다. 다시 로그인해 주세요.');}
     if(claims.admin!==true)throw Error('관리자 권한이 없습니다. 권한 부여 후 다시 로그인해 주세요.');
     await database('adminCheck');
-    const [publicWorks,draftWorks,members]=await Promise.all([database('publicWorks'),database('draftWorks'),database('members')]);
-    const works=KK.seed.map(seed=>{const published=publicWorks?.[seed.id],draft=draftWorks?.[seed.id];return {...seed,...(draft||published||{}),id:seed.id,visible:!!published,saved:!!(draft||published)};});
+    const [publicWorks,draftWorks,members,content]=await Promise.all([database('publicWorks'),database('draftWorks'),database('members'),siteContent()]);
+    const works=KK.seed.map(seed=>{const published=publicWorks?.[seed.id],draft=draftWorks?.[seed.id];return {...seed,...(draft||published||{}),...(content['work-'+seed.id]?{name:content['work-'+seed.id].title,description:content['work-'+seed.id].summary,image:content['work-'+seed.id].image,fit:content['work-'+seed.id].fit,tags:content['work-'+seed.id].tags}:{}),id:seed.id,visible:!!published,saved:!!(draft||published)};});
     return {environment:'firebase-pages',projectId:(await KKAuth.settings()).projectId,verifiedAt:new Date().toISOString(),user:{uid:user.localId,email:user.email,displayName:user.displayName,admin:true},works,members:Object.entries(members||{}).map(([uid,p])=>({uid,displayName:p.displayName})),counts:{content:works.filter(w=>w.saved).length,members:Object.keys(members||{}).length}};
   }
   async function saveWork(work){
     if(!KK.seed.some(x=>x.id===work.id))throw Error('등록되지 않은 작품입니다.');
     const value={name:String(work.name).trim(),description:String(work.description).trim()};
-    if(!value.name||value.name.length>50||!value.description||value.description.length>300)throw Error('작품명은 1~50자, 소개는 1~300자로 입력해 주세요.');
+    if(!value.name||value.name.length>100||value.description.length>600)throw Error('작품명은 1~100자, 소개는 600자 이내로 입력해 주세요.');
     // 공개/숨김 이동을 한 번에 저장하여 숨긴 작품이 공개 경로에 남지 않게 합니다.
-    await database('','PATCH',{['publicWorks/'+work.id]:work.visible?value:null,['draftWorks/'+work.id]:work.visible?null:value});
+    await database('','PATCH',{['publicWorks/'+work.id]:work.visible?value:null,['draftWorks/'+work.id]:work.visible?null:value,...((await siteContent())['work-'+work.id]?{['siteContent/work-'+work.id+'/title']:value.name,['siteContent/work-'+work.id+'/summary']:value.description}:{})});
   }
   async function saveProfile(){const user=await KKAuth.account();return database('members/'+encodeURIComponent(user.localId),'PUT',{displayName:(user.displayName||'꾸미콘 친구').slice(0,50)});}
   async function publicWorks(){const values=await database('publicWorks','GET',undefined,false);return KK.seed.filter(s=>values?.[s.id]).map(s=>({...s,name:String(values[s.id].name),description:String(values[s.id].description),visible:true}));}
