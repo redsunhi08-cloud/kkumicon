@@ -41,7 +41,7 @@
   const wish=document.querySelector('#story-wish');if(wish)wish.onclick=()=>{const key=id.slice(5),old=KK.read('kk-wishes',[]),list=Array.isArray(old)?old:[],next=list.includes(key)?list.filter(x=>x!==key):[...list,key];document.querySelector('#story-wish-status').textContent=KK.write('kk-wishes',next)?(next.includes(key)?'찜했습니다.':'찜을 해제했습니다.'):'저장 공간을 사용할 수 없습니다.';};
  }
  async function renderOrderInfo(id,root){
-  const panel=document.createElement('section');panel.className='shop-card';panel.innerHTML='<p>가격과 주문 안내를 확인하고 있어요…</p>';root.querySelector('article').append(panel);
+  root.querySelector('[data-order-info]')?.remove();const panel=document.createElement('section');panel.dataset.orderInfo='';panel.className='shop-card';panel.innerHTML='<p>가격과 주문 안내를 확인하고 있어요…</p>';root.querySelector('article').append(panel);
   try{const p=await KKPages.commerce('products/'+id,'GET',undefined,false)||{};if(!panel.isConnected)return;
    panel.innerHTML=`<h2>가격·배송·주문 안내</h2><p><strong>상품 가격: ${Number.isInteger(p.price)?p.price.toLocaleString('ko-KR')+'원':'확인 필요 · 판매 준비 중'}</strong></p><p style="white-space:pre-wrap">${e(p.days||'배송비와 제작·배송 일정은 아직 등록되지 않았습니다.')}</p><p>주문 요청 → 관리자 금액·제작 확인 → 결제 방법 안내 → 제작·배송 순서로 진행합니다. 홈페이지 접수만으로 결제되지 않습니다.</p>${p.mode==='request'&&Number.isInteger(p.price)?`<label class="field">수량<input id="detail-quantity" type="number" min="1" max="99" step="1" value="1"></label><button type="button" class="button yellow" id="detail-order">배송 정보 입력하고 주문 요청 →</button>`:p.mode==='external'&&model.safeLink(p.url)?`<a class="button yellow" href="${e(model.safeLink(p.url))}" target="_blank" rel="noopener">외부 판매처에서 구매 ↗</a>`:'<p>판매 준비 중입니다. 가격과 판매 방식 등록 후 주문할 수 있어요.</p>'}<p><a class="text-link" href="shop.html?view=orders">내 주문·배송 확인 →</a></p>${isAdmin?'<a class="button white" href="shop.html?view=manage">가격·배송 안내 설정</a>':''}`;
    const button=panel.querySelector('#detail-order');if(button)button.onclick=()=>{const input=panel.querySelector('#detail-quantity');if(!input.reportValidity())return;try{let cart={};try{cart=JSON.parse(localStorage.getItem('kk-cart')||'{}');}catch{}if(!cart||typeof cart!=='object'||Array.isArray(cart))cart={};cart[id]=Number(input.value);localStorage.setItem('kk-cart',JSON.stringify(cart));location.href='shop.html?view=cart';}catch{button.textContent='저장 공간을 확인한 후 다시 시도해 주세요.';}};
@@ -75,6 +75,22 @@
  document.addEventListener('keydown',event=>{if(event.key==='Enter'&&event.target.matches('.hero-art[data-content]'))location.href=url(event.target.dataset.content);});
  document.addEventListener('error',event=>{const image=event.target;if(image.tagName==='IMG'&&image.classList.contains('cms-image')){const fallback=document.createElement('span');fallback.textContent='이미지를 불러오지 못했어요';fallback.className='cms-message';image.replaceWith(fallback);}},true);
  window.addEventListener('beforeunload',event=>{if(dialog.open&&dirty){event.preventDefault();event.returnValue='';}});
+ async function refreshProductDisplay(){
+  const cards=document.querySelectorAll('.goods-card');
+  if(cards.length)try{
+   const catalog=await KKPages.commerce('products','GET',undefined,false)||{};
+   cards.forEach((card,i)=>{
+    const p=catalog[['keyring','sticker','postcard'][i]]||{};
+    let info=card.querySelector('.goods-order-info');
+    if(!info){info=document.createElement('span');info.className='goods-order-info';card.append(info);}
+    const price=Number.isInteger(p.price)?p.price.toLocaleString('ko-KR')+'원':'가격 준비 중';
+    info.textContent=price+' · '+({prepare:'판매 준비 중',request:'주문 요청 가능',external:'외부 판매처 구매'}[p.mode]||'판매 준비 중')+(p.days?'\n배송 안내: '+p.days:'');
+   });
+  }catch{cards.forEach(card=>{let info=card.querySelector('.goods-order-info');if(info)info.textContent='가격·배송 안내를 불러오지 못했습니다. 상세페이지에서 다시 확인해 주세요.';});}
+  const id=new URLSearchParams(location.search).get('id'),root=document.querySelector('#story-page');
+  if(root?.querySelector('article')&&['keyring','sticker','postcard'].includes(id))renderOrderInfo(id,root);
+ }
+ window.addEventListener('focus',refreshProductDisplay);
  async function boot(){
   let loadError='';try{records=await KKPages.siteContent();}catch(error){loadError=error.message;}
   // 작품명과 소개는 기존 공개 데이터도 기본값에 반영합니다.
@@ -84,5 +100,5 @@
   if(isAdmin){const bar=document.createElement('aside');bar.className='cms-bar';bar.innerHTML=`<strong>작가 편집 모드</strong><label>수정할 영역 <select id="cms-section">${Object.entries(seeds).map(([id,r])=>`<option value="${e(id)}">${e(r.title)}</option>`).join('')}</select></label><button id="cms-open">이미지·내용 수정 ✎</button><a href="admin.html">관리자 대시보드</a><span id="cms-global-status" role="status">${e(loadError?'기존 콘텐츠 조회 실패 · 규칙 갱신을 확인하세요.':'수정할 영역을 선택하거나 상세페이지에서 편집하세요.')}</span>`;document.body.prepend(bar);bar.querySelector('#cms-open').onclick=()=>edit(bar.querySelector('select').value);applyHome();renderDetail();if(new URLSearchParams(location.search).get('edit')==='1')edit(new URLSearchParams(location.search).get('id'));}
   else if(loadError&&document.querySelector('#story-page')){const p=document.createElement('p');p.className='cms-message';p.textContent='저장된 콘텐츠를 불러오지 못해 기본 안내를 표시합니다. 잠시 후 새로고침해 주세요.';document.querySelector('#story-page').prepend(p);}
  }
- boot();
+ boot().then(refreshProductDisplay);
 })();
