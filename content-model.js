@@ -31,5 +31,5 @@ window.KKContentModel=(()=>{
  function safeLink(value){try{const u=new URL(value);return u.protocol==='https:'?u.href:'';}catch{return '';}}
  function tags(value){return [...new Set(String(value??'').split(/[,，\n]+/).map(x=>x.trim().replace(/^#+/,'')).filter(Boolean))];}
  function validate(v){if(v.tags!==undefined&&(typeof v.tags!=='string'||v.tags.length>200||tags(v.tags).length>10||tags(v.tags).some(t=>t.length>20)))throw Error('태그는 쉼표로 구분해 10개까지, 각각 20자 이내로 입력해 주세요.');if(!v.title?.trim()||v.title.length>100||v.summary.length>600||v.body.length>12000||v.alt.length>150||v.button.length>40)throw Error('제목 100자, 요약 600자, 본문 12,000자 이내로 입력해 주세요.');if(v.image&&(!safeImage(v.image)||v.image.length>450000))throw Error('지원하지 않는 이미지이거나 이미지 용량이 큽니다.');if(v.link&&!safeLink(v.link))throw Error('버튼 주소는 https://로 시작하는 올바른 주소를 입력해 주세요.');return v;}
- return {goodsIds,seeds,safeImage,safeLink,validate,tags};
+ return {isGoodsPublic:(records,id)=>records?.[id+"-visibility"]?.summary!=="hidden",goodsIds,seeds,safeImage,safeLink,validate,tags};
 })();

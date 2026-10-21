@@ -3,3 +3,5 @@
 .hero-art::before{content:none!important;display:none!important}.art-title h3,.hero-copy h1,.hero-copy p,.hero-side p,.section-heading h2,.section-heading p,.goods-card h3,.goods-card p,.artist-copy h2,.artist-copy p,.news-list button>span:nth-child(2),.collection-meta>span,.goods-card .tag{white-space:pre-line}
 
 .goods-order-info{display:block;white-space:pre-line;margin-top:12px;line-height:1.7;font-size:13px;overflow-wrap:anywhere}
+
+.goods-card[hidden]{display:none!important}

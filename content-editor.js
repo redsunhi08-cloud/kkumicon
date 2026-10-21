@@ -22,6 +22,7 @@
    if(isAdmin&&!add){add=document.createElement('button');add.type='button';add.id='goods-add';add.className='button yellow';grid.after(add);add.onclick=()=>{const id=model.goodsIds.slice(3).find(id=>!records[id]);if(id)edit(id);};}
    if(add){const count=model.goodsIds.filter(id=>model.goodsIds.indexOf(id)<3||records[id]).length;add.textContent=count>=9?'굿즈 9개 등록 완료':'＋ 굿즈 추가 ('+count+'/9)';add.disabled=count>=9;}
   }
+  document.querySelectorAll('.goods-card').forEach((card,i)=>{card.hidden=!model.isGoodsPublic(records,card.dataset.content||model.goodsIds[i]);});
   const notice=document.querySelector('.collection-meta>span:last-child');
   if(notice){notice.textContent=get('collection-notice').summary;notice.dataset.editContent='collection-notice';notice.tabIndex=isAdmin?0:-1;notice.classList.toggle('cms-inline-edit',isAdmin);notice.title=isAdmin?'클릭하여 안내 문구 수정':'';}
   document.querySelectorAll('.goods-card').forEach((card,i)=>{const badge=card.querySelector('.tag');if(!badge)return;const id=(card.dataset.content||model.goodsIds[i])+'-badge';badge.textContent=get(id).summary;badge.dataset.editContent=id;badge.classList.toggle('cms-inline-edit',isAdmin);badge.title=isAdmin?'클릭하여 상태 표시 수정':'';});
@@ -42,6 +43,7 @@
   const root=document.querySelector('#story-page');if(!root)return;
   const id=new URLSearchParams(location.search).get('id')||'world';
   if(!seeds[id]){root.innerHTML='<h1>이야기를 찾을 수 없어요</h1><a href="index.html">홈페이지로 돌아가기</a>';return;}
+  if(model.goodsIds.includes(id)&&!model.isGoodsPublic(records,id)&&!isAdmin){root.innerHTML='<h1>비공개 굿즈입니다</h1><p>현재 공개하지 않는 상품입니다.</p><a href="index.html#goods">다른 굿즈 보기 →</a>';return;}
   const r=get(id);document.title=r.title+' · 꾸미콘';
   root.innerHTML=`<a class="text-link" href="index.html">HOME / 꾸미콘 이야기</a><article><div class="story-hero"><div class="story-picture">${picture(r)}</div><div class="story-copy"><span class="eyebrow">KKUMICON · LITTLE STORIES</span><h1>${e(r.title)}</h1><p>${e(r.summary)}</p><div class="tags">${model.tags(r.tags).map(t=>`<span>#${e(t)}</span>`).join('')}</div>${model.safeLink(r.link)?`<a class="button yellow" href="${e(model.safeLink(r.link))}" target="_blank" rel="noopener noreferrer">${e(r.button||'자세히 보기')} ↗</a>`:''}${id.startsWith('work-')?`<button class="button white" id="story-wish">찜하기 / 해제 ♡</button><p id="story-wish-status" role="status"></p>`:''}${isAdmin?`<button class="cms-edit cms-detail-button" data-edit-content="${e(id)}">이미지·내용 수정 ✎</button>`:''}</div></div><div class="story-body">${e(r.body)}</div>${[...model.goodsIds,'goods'].includes(id)?'<a class="button yellow" href="shop.html?view=products">가격·구매 방식 확인하기 →</a>':''}</article><nav class="story-related" aria-label="다른 이야기"><a class="button white" href="index.html#collection">캐릭터 컬렉션</a><a class="button white" href="${url('goods')}">굿즈 이야기</a><a class="button white" href="${url('artist')}">작가 소개</a></nav>`;
   if(model.goodsIds.includes(id))renderOrderInfo(id,root);
@@ -97,7 +99,7 @@
   const id=new URLSearchParams(location.search).get('id'),root=document.querySelector('#story-page');
   if(root?.querySelector('article')&&model.goodsIds.includes(id))renderOrderInfo(id,root);
  }
- window.addEventListener('focus',refreshProductDisplay);
+ window.addEventListener('focus',async()=>{if(dialog.open)return;try{const next=await KKPages.siteContent();if(JSON.stringify(next)!==JSON.stringify(records)){records=next;applyHome();renderDetail();}}catch{}refreshProductDisplay();});
  async function boot(){
   let loadError='';try{records=await KKPages.siteContent();}catch(error){loadError=error.message;}
   // 작품명과 소개는 기존 공개 데이터도 기본값에 반영합니다.
