@@ -1,5 +1,6 @@
 'use strict';
 window.KKContentModel=(()=>{
+ const goodsIds=['keyring','sticker','postcard',...Array.from({length:6},(_,i)=>'goods-'+(i+4))];
  const seeds={};
  function add(id,title,summary,body,kind='yellow'){seeds[id]={title,summary,body,kind,image:'',alt:title,link:'',button:'자세히 보기',fit:'contain'};}
  add('collection-notice','작품 목록 안내 문구','창작 기획 예시 · 실제 판매 작품이 아닙니다','메인 화면 요약 칸에 표시할 문구를 입력하세요. 비우면 문구를 숨깁니다.');
@@ -25,9 +26,10 @@ window.KKContentModel=(()=>{
  add('community','좋아하는 마음이 모이는 곳 ♡','우리의 작은 세계에 함께해 주세요.','꾸미콘의 친구가 되어 주세요.');
  add('terms','이용 안내 · 운영 전 검토용','서비스 이용 안내','작품과 굿즈는 현재 기획 예시입니다. 자체 결제나 구매는 지원하지 않습니다. 정식 이용약관은 운영 시작 전 확정이 필요합니다.');
  add('privacy','개인정보 안내 · 운영 전 검토용','개인정보 처리 안내','회원가입 정보는 Firebase 인증 서비스에서 처리합니다. 비밀번호는 사이트 코드나 콘텐츠에 저장하지 않습니다. 프로필 저장 시 닉네임을 데이터베이스에 저장합니다. 찜 목록은 이 브라우저에 저장됩니다. 정식 보관·삭제 절차는 운영 전 확정이 필요합니다.');
+ for(let i=4;i<=9;i++){add('goods-'+i,'새 굿즈 '+i,'','상품의 구성과 소재, 주문 안내를 입력해 주세요.');add('goods-'+i+'-badge','굿즈 '+i+' 상태 표시','준비 중','원하는 상태 문구를 입력하세요.');}
  function safeImage(value){return typeof value==='string'&&( /^data:image\/(webp|png|jpeg);base64,[A-Za-z0-9+/=]+$/.test(value)||/^https:\/\/[^\s]+$/.test(value)||/^images\/[\w가-힣. -]+$/.test(value))?value:'';}
  function safeLink(value){try{const u=new URL(value);return u.protocol==='https:'?u.href:'';}catch{return '';}}
  function tags(value){return [...new Set(String(value??'').split(/[,，\n]+/).map(x=>x.trim().replace(/^#+/,'')).filter(Boolean))];}
  function validate(v){if(v.tags!==undefined&&(typeof v.tags!=='string'||v.tags.length>200||tags(v.tags).length>10||tags(v.tags).some(t=>t.length>20)))throw Error('태그는 쉼표로 구분해 10개까지, 각각 20자 이내로 입력해 주세요.');if(!v.title?.trim()||v.title.length>100||v.summary.length>600||v.body.length>12000||v.alt.length>150||v.button.length>40)throw Error('제목 100자, 요약 600자, 본문 12,000자 이내로 입력해 주세요.');if(v.image&&(!safeImage(v.image)||v.image.length>450000))throw Error('지원하지 않는 이미지이거나 이미지 용량이 큽니다.');if(v.link&&!safeLink(v.link))throw Error('버튼 주소는 https://로 시작하는 올바른 주소를 입력해 주세요.');return v;}
- return {seeds,safeImage,safeLink,validate,tags};
+ return {goodsIds,seeds,safeImage,safeLink,validate,tags};
 })();

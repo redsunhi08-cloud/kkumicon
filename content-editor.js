@@ -15,9 +15,16 @@
  function text(selector,value){const n=document.querySelector(selector);if(n&&n.textContent!==value)n.textContent=value;}
  function applyHome(){
   if(!document.querySelector('#main'))return;
+  const grid=document.querySelector('.goods-grid');
+  if(grid){
+   model.goodsIds.slice(3).forEach(id=>{if(!records[id]||grid.querySelector('[data-content="'+id+'"]'))return;const card=document.createElement('button');card.type='button';card.className='goods-card';card.dataset.content=id;card.innerHTML='<div class="goods-art">'+picture(get(id))+'</div><small>캐릭터 굿즈</small><h3></h3><p></p><span class="tag"></span>';grid.append(card);});
+   let add=document.querySelector('#goods-add');
+   if(isAdmin&&!add){add=document.createElement('button');add.type='button';add.id='goods-add';add.className='button yellow';grid.after(add);add.onclick=()=>{const id=model.goodsIds.slice(3).find(id=>!records[id]);if(id)edit(id);};}
+   if(add){const count=model.goodsIds.filter(id=>model.goodsIds.indexOf(id)<3||records[id]).length;add.textContent=count>=9?'굿즈 9개 등록 완료':'＋ 굿즈 추가 ('+count+'/9)';add.disabled=count>=9;}
+  }
   const notice=document.querySelector('.collection-meta>span:last-child');
   if(notice){notice.textContent=get('collection-notice').summary;notice.dataset.editContent='collection-notice';notice.tabIndex=isAdmin?0:-1;notice.classList.toggle('cms-inline-edit',isAdmin);notice.title=isAdmin?'클릭하여 안내 문구 수정':'';}
-  document.querySelectorAll('.goods-card').forEach((card,i)=>{const badge=card.querySelector('.tag');if(!badge)return;const id=['keyring','sticker','postcard'][i]+'-badge';badge.textContent=get(id).summary;badge.dataset.editContent=id;badge.classList.toggle('cms-inline-edit',isAdmin);badge.title=isAdmin?'클릭하여 상태 표시 수정':'';});
+  document.querySelectorAll('.goods-card').forEach((card,i)=>{const badge=card.querySelector('.tag');if(!badge)return;const id=(card.dataset.content||model.goodsIds[i])+'-badge';badge.textContent=get(id).summary;badge.dataset.editContent=id;badge.classList.toggle('cms-inline-edit',isAdmin);badge.title=isAdmin?'클릭하여 상태 표시 수정':'';});
   const heroId=['hero','hero-goods','hero-artist'][slideIndex],hero=get(heroId);
   const heroArt=document.querySelector('.hero-art');heroArt.dataset.content=heroId;heroArt.setAttribute('role','link');heroArt.tabIndex=0;heroArt.setAttribute('aria-label','메인 배너 이야기 보기');
   const heroImage=heroArt.querySelector('img');heroImage.src=model.safeImage(hero.image)||'images/꾸미콘로고2.png';heroImage.alt=hero.alt;
@@ -27,7 +34,7 @@
    if(id==='artist'&&r.image)document.querySelector('#artist-character').innerHTML=picture(r);
   }
   for(const [id,selector] of [['side-goods','.hero-side.peach'],['side-artist','.hero-side.sky']])if(records[id]||lineBreakDefaults[id]){const r=get(id);text(selector+' p',r.title);const node=document.querySelector(selector+' #side-character')||document.querySelector(selector+' .drawing-icon');if(r.image&&node)node.innerHTML=picture(r);}
-  document.querySelectorAll('.goods-card').forEach((node,i)=>{const id=['keyring','sticker','postcard'][i],r=get(id);node.dataset.content=id;node.removeAttribute('data-info');if(records[id]){node.querySelector('h3').textContent=r.title;node.querySelector('p').textContent=r.summary;if(r.image)node.querySelector('.goods-art').innerHTML=picture(r);}});
+  document.querySelectorAll('.goods-card').forEach((node,i)=>{const id=node.dataset.content||model.goodsIds[i],r=get(id);node.dataset.content=id;node.removeAttribute('data-info');if(records[id]){node.querySelector('h3').textContent=r.title;node.querySelector('p').textContent=r.summary;if(r.image)node.querySelector('.goods-art').innerHTML=picture(r);}});
   document.querySelectorAll('.news-list button').forEach((node,i)=>{const id=['welcome','preview','goods-news'][i];node.dataset.content=id;node.removeAttribute('data-info');if(records[id])node.querySelector('span:nth-child(2)').textContent=get(id).title;});
   document.querySelectorAll('[data-work]').forEach(node=>{const id='work-'+node.dataset.work;if(!records[id])return;const r=get(id);if(node.classList.contains('art-open')){node.innerHTML=picture(r);node.setAttribute('aria-label',r.title+' 작품 상세 보기');}const h=node.querySelector('h3');if(h)h.textContent=r.title;const card=node.closest('.art-card');if(card)card.querySelector('.art-caption').textContent=r.summary;});
  }
@@ -36,8 +43,8 @@
   const id=new URLSearchParams(location.search).get('id')||'world';
   if(!seeds[id]){root.innerHTML='<h1>이야기를 찾을 수 없어요</h1><a href="index.html">홈페이지로 돌아가기</a>';return;}
   const r=get(id);document.title=r.title+' · 꾸미콘';
-  root.innerHTML=`<a class="text-link" href="index.html">HOME / 꾸미콘 이야기</a><article><div class="story-hero"><div class="story-picture">${picture(r)}</div><div class="story-copy"><span class="eyebrow">KKUMICON · LITTLE STORIES</span><h1>${e(r.title)}</h1><p>${e(r.summary)}</p><div class="tags">${model.tags(r.tags).map(t=>`<span>#${e(t)}</span>`).join('')}</div>${model.safeLink(r.link)?`<a class="button yellow" href="${e(model.safeLink(r.link))}" target="_blank" rel="noopener noreferrer">${e(r.button||'자세히 보기')} ↗</a>`:''}${id.startsWith('work-')?`<button class="button white" id="story-wish">찜하기 / 해제 ♡</button><p id="story-wish-status" role="status"></p>`:''}${isAdmin?`<button class="cms-edit cms-detail-button" data-edit-content="${e(id)}">이미지·내용 수정 ✎</button>`:''}</div></div><div class="story-body">${e(r.body)}</div>${['keyring','sticker','postcard','goods'].includes(id)?'<a class="button yellow" href="shop.html?view=products">가격·구매 방식 확인하기 →</a>':''}</article><nav class="story-related" aria-label="다른 이야기"><a class="button white" href="index.html#collection">캐릭터 컬렉션</a><a class="button white" href="${url('goods')}">굿즈 이야기</a><a class="button white" href="${url('artist')}">작가 소개</a></nav>`;
-  if(['keyring','sticker','postcard'].includes(id))renderOrderInfo(id,root);
+  root.innerHTML=`<a class="text-link" href="index.html">HOME / 꾸미콘 이야기</a><article><div class="story-hero"><div class="story-picture">${picture(r)}</div><div class="story-copy"><span class="eyebrow">KKUMICON · LITTLE STORIES</span><h1>${e(r.title)}</h1><p>${e(r.summary)}</p><div class="tags">${model.tags(r.tags).map(t=>`<span>#${e(t)}</span>`).join('')}</div>${model.safeLink(r.link)?`<a class="button yellow" href="${e(model.safeLink(r.link))}" target="_blank" rel="noopener noreferrer">${e(r.button||'자세히 보기')} ↗</a>`:''}${id.startsWith('work-')?`<button class="button white" id="story-wish">찜하기 / 해제 ♡</button><p id="story-wish-status" role="status"></p>`:''}${isAdmin?`<button class="cms-edit cms-detail-button" data-edit-content="${e(id)}">이미지·내용 수정 ✎</button>`:''}</div></div><div class="story-body">${e(r.body)}</div>${[...model.goodsIds,'goods'].includes(id)?'<a class="button yellow" href="shop.html?view=products">가격·구매 방식 확인하기 →</a>':''}</article><nav class="story-related" aria-label="다른 이야기"><a class="button white" href="index.html#collection">캐릭터 컬렉션</a><a class="button white" href="${url('goods')}">굿즈 이야기</a><a class="button white" href="${url('artist')}">작가 소개</a></nav>`;
+  if(model.goodsIds.includes(id))renderOrderInfo(id,root);
   const wish=document.querySelector('#story-wish');if(wish)wish.onclick=()=>{const key=id.slice(5),old=KK.read('kk-wishes',[]),list=Array.isArray(old)?old:[],next=list.includes(key)?list.filter(x=>x!==key):[...list,key];document.querySelector('#story-wish-status').textContent=KK.write('kk-wishes',next)?(next.includes(key)?'찜했습니다.':'찜을 해제했습니다.'):'저장 공간을 사용할 수 없습니다.';};
  }
  async function renderOrderInfo(id,root){
@@ -61,7 +68,7 @@
  function closeEditor(){if(imageBusy)return;if(!dirty||confirm('저장하지 않은 변경 사항을 닫을까요?'))dialog.close();}
  field('cancel').onclick=closeEditor;dialog.addEventListener('cancel',event=>{event.preventDefault();closeEditor();});field('form').addEventListener('input',()=>dirty=true);
  field('form').onsubmit=async event=>{event.preventDefault();if(!isAdmin||imageBusy)return;field('save').disabled=true;field('cancel').disabled=true;field('status').textContent='Firebase에 저장 중입니다…';
-  try{const value={};for(const key of ['title','summary','body','alt','link','button','fit','tags'])value[key]=field(key).value.trim();value.image=draftImage;model.validate(value);await KKPages.saveContent(active,value);records[active]=value;dirty=false;window.dispatchEvent(new Event('kk-content-ready'));applyHome();renderDetail();dialog.close();const status=document.querySelector('#cms-global-status');if(status)status.textContent='저장 완료 · 다른 화면은 새로고침하면 반영됩니다.';}
+  try{const value={};for(const key of ['title','summary','body','alt','link','button','fit','tags'])value[key]=field(key).value.trim();value.image=draftImage;model.validate(value);await KKPages.saveContent(active,value);records[active]=value;dirty=false;window.dispatchEvent(new Event('kk-content-ready'));applyHome();renderDetail();refreshProductDisplay();dialog.close();const status=document.querySelector('#cms-global-status');if(status)status.textContent='저장 완료 · 다른 화면은 새로고침하면 반영됩니다.';}
   catch(error){field('status').textContent=error.message+'\n규칙을 갱신하지 않았다면 firebase-pages.rules.json을 Firebase 규칙 탭에 게시해 주세요. 입력한 내용은 유지됩니다.';}finally{field('save').disabled=false;field('cancel').disabled=false;}
  };
  document.addEventListener('click',event=>{
@@ -80,7 +87,7 @@
   if(cards.length)try{
    const catalog=await KKPages.commerce('products','GET',undefined,false)||{};
    cards.forEach((card,i)=>{
-    const p=catalog[['keyring','sticker','postcard'][i]]||{};
+    const p=catalog[card.dataset.content||model.goodsIds[i]]||{};
     let info=card.querySelector('.goods-order-info');
     if(!info){info=document.createElement('span');info.className='goods-order-info';card.append(info);}
     const price=Number.isInteger(p.price)?p.price.toLocaleString('ko-KR')+'원':'가격 준비 중';
@@ -88,7 +95,7 @@
    });
   }catch{cards.forEach(card=>{let info=card.querySelector('.goods-order-info');if(info)info.textContent='가격·배송 안내를 불러오지 못했습니다. 상세페이지에서 다시 확인해 주세요.';});}
   const id=new URLSearchParams(location.search).get('id'),root=document.querySelector('#story-page');
-  if(root?.querySelector('article')&&['keyring','sticker','postcard'].includes(id))renderOrderInfo(id,root);
+  if(root?.querySelector('article')&&model.goodsIds.includes(id))renderOrderInfo(id,root);
  }
  window.addEventListener('focus',refreshProductDisplay);
  async function boot(){
