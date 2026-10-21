@@ -14,5 +14,11 @@ window.KKShopModel=(()=>{
   return {rows,subtotal,discount,total:subtotal===null?null:subtotal-discount,valid};
  }
  function sales(orders){const paid=orders.filter(o=>o.paymentStatus==='paid'&&o.status!=='cancelled'&&Number.isInteger(o.confirmedAmount)&&o.confirmedAmount>=0);return {count:paid.length,amount:paid.reduce((n,o)=>n+o.confirmedAmount,0)};}
- return {products,faqs,statuses,money,cart,safeURL,quote,sales};
+ function delivery(raw){
+  const limits={recipient:50,phone:30,postalCode:10,address:200,addressDetail:150},out={};
+  for(const [key,max] of Object.entries(limits)){out[key]=String(raw[key]||'').trim();if(out[key].length>max||(!out[key]&&key!=='addressDetail'))throw Error('받는 사람, 연락처, 우편번호와 주소를 확인해 주세요.');}
+  if(!/^[0-9+() -]{7,30}$/.test(out.phone)||!/^\d{5}$/.test(out.postalCode))throw Error('연락처와 5자리 우편번호를 확인해 주세요.');
+  return out;
+ }
+ return {delivery,products,faqs,statuses,money,cart,safeURL,quote,sales};
 })();

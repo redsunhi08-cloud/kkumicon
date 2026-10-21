@@ -2,6 +2,8 @@
 window.KKContentModel=(()=>{
  const seeds={};
  function add(id,title,summary,body,kind='yellow'){seeds[id]={title,summary,body,kind,image:'',alt:title,link:'',button:'자세히 보기',fit:'contain'};}
+ add('collection-notice','작품 목록 안내 문구','창작 기획 예시 · 실제 판매 작품이 아닙니다','메인 화면 요약 칸에 표시할 문구를 입력하세요. 비우면 문구를 숨깁니다.');
+ for(const [id,name] of [['keyring','키링'],['sticker','스티커'],['postcard','엽서']])add(id+'-badge',name+' 상태 표시','기획 중','메인 화면 요약 칸에 준비 중, 판매 중 등 원하는 상태 문구를 입력하세요. 실제 주문 가능 여부는 상품 운영 설정에서 관리합니다.');
  add('hero','작은 표정 하나가, 오늘의 마음을 대신해요.','말로 다 전하지 못한 마음도 괜찮아요.\n나를 닮은 귀여운 친구가 대신 전해줄 거예요.','꾸미콘의 캐릭터와 이야기를 만나보세요.');
  seeds.hero.image='images/꾸미콘로고2.png';
  add('hero-goods','소소한 일상에도, 귀여운 순간이 필요해요.','화면 속 작은 친구가 일상 가까이에.','좋아하는 마음을 담은 굿즈를 준비하고 있어요.');

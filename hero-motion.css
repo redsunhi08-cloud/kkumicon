@@ -1,0 +1,20 @@
+.hero-main.hero-playing .hero-art img{animation:kk-hero-zoom 6.5s ease-in-out both;transform-origin:center}
+.hero-main.hero-playing .hero-copy>h1,.hero-main.hero-playing .hero-copy>p{animation:kk-hero-copy 6.5s ease both}
+.hero-controls .hero-play{width:auto;height:auto;min-height:32px;padding:5px 10px;border:1px solid #d9c5ab;border-radius:20px;font-size:11px;white-space:nowrap}
+@keyframes kk-hero-zoom{0%{opacity:.35;transform:scale(.96) rotate(-2deg)}12%{opacity:1}65%{opacity:1;transform:scale(1.08) rotate(1deg)}90%{opacity:1;transform:scale(1)}100%{opacity:.35;transform:scale(.96) rotate(-2deg)}}
+@keyframes kk-hero-copy{0%{opacity:.3;translate:0 8px}12%,90%{opacity:1;translate:0 0}100%{opacity:.3;translate:0 -5px}}
+@media(max-width:767px){.hero-controls{flex-wrap:wrap;max-width:230px;position:relative;z-index:2}.hero-controls .hero-play{font-size:10px}}
+@media(prefers-reduced-motion:reduce){.hero-main.hero-playing .hero-art img,.hero-main.hero-playing .hero-copy>h1,.hero-main.hero-playing .hero-copy>p{animation:none}}
+
+/* 배너마다 같은 프레임을 사용하고 내용은 오른쪽으로 이동합니다. */
+.hero-main{height:410px;min-height:410px!important}
+.hero-art{height:100%;display:flex;align-items:center;justify-content:center}
+.hero-art img{height:300px!important;width:100%;object-fit:contain}
+.hero-main.hero-playing .hero-art img{animation:kk-slide-right 6.5s ease-in-out both}
+.hero-main.hero-playing .hero-copy>h1,.hero-main.hero-playing .hero-copy>p{animation:kk-slide-right 6.5s ease-in-out both}
+@keyframes kk-slide-right{0%{opacity:0;transform:translateX(-55px)}12%,88%{opacity:1;transform:translateX(0)}100%{opacity:0;transform:translateX(55px)}}
+.cms-inline-edit{cursor:pointer;border-bottom:1px dashed #a28156;min-height:18px;display:inline-block}
+.cms-inline-edit:hover{background:#ffefb8}
+@media(min-width:1500px){.hero-main{height:440px;min-height:440px!important}}
+@media(max-width:767px){.hero-main{height:560px;min-height:560px!important}.hero-art{height:190px}.hero-art img{height:180px!important}.hero-copy h1{max-height:122px;overflow:auto}.hero-copy>p{max-height:60px;overflow:auto}}
+@media(prefers-reduced-motion:reduce){.hero-main.hero-playing .hero-art img,.hero-main.hero-playing .hero-copy>h1,.hero-main.hero-playing .hero-copy>p{animation:none}}
