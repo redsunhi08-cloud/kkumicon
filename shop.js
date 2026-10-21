@@ -9,8 +9,11 @@
  const link=(v,t)=>`<a class="button white" href="shop.html?view=${v}">${t||labels[v]}</a>`;
  const empty=t=>`<div class="shop-empty"><h2>${t}</h2><p>등록된 정보가 생기면 이곳에서 확인할 수 있어요.</p>${link('products')}</div>`;
  const field=(name,label,value='',type='text')=>`<label class="field">${label}<input name="${name}" type="${type}" value="${E(value)}" ${type==='number'?'min="0" step="1"':''} maxlength="500"></label>`;
- document.querySelector('#shop-title').textContent=labels[view]||labels.products;
- document.querySelector('#shop-nav').innerHTML=Object.entries(labels).slice(0,7).map(([v,t])=>`<a href="shop.html?view=${v}" ${v===view?'aria-current="page"':''}>${t}</a>`).join('');
+ const parentView={shipping:'orders',coupons:'events'}[view]||view;
+ document.querySelector('#shop-title').textContent=labels[parentView]||labels.products;
+ document.querySelector('#shop-nav').innerHTML=['products','cart','orders','events','faq'].map(v=>`<a href="shop.html?view=${v}" ${v===parentView?'aria-current="page"':''}>${labels[v]}</a>`).join('');
+ const children=parentView==='orders'?[['orders','내 주문·배송'],['shipping','배송 안내']]:parentView==='events'?[['events','이벤트'],['coupons','쿠폰함']]:[];
+ if(children.length){const tabs=document.createElement('nav');tabs.className='shop-subnav';tabs.setAttribute('aria-label',labels[parentView]+' 하위 메뉴');tabs.innerHTML=children.map(([v,t])=>`<a href="shop.html?view=${v}" ${v===view?'aria-current="page"':''}>${t}</a>`).join('');box.before(tabs);}
  function coupon(){return Object.values(promotions).find(p=>p.code===code&&p.category==='coupon');}
  function render(){
   if(view==='faq'){box.innerHTML=`<label class="field">궁금한 내용을 검색해 보세요<input id="faq-search" type="search" placeholder="주문, 배송, 쿠폰…"></label><div class="faq-tabs">${['전체',...new Set(M.faqs.map(f=>f[0]))].map(t=>`<button data-category="${t}" class="button white">${t}</button>`).join('')}</div><div id="faq-results"></div>`;faq();return;}

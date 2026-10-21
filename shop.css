@@ -2,3 +2,22 @@
 .cart-layout{display:grid;grid-template-columns:minmax(0,2fr) minmax(250px,1fr);gap:24px}.cart-row input{width:70px}.shop-card+ .shop-card{margin-top:18px}.shop-empty{padding:40px;text-align:center}.table-scroll{overflow-x:auto}.table-scroll table{width:100%;text-align:left;border-collapse:collapse}.table-scroll th,.table-scroll td{padding:20px;border-bottom:1px solid #e6dbc9}.field select,.field textarea{width:100%;padding:12px;border:1px solid #e6dbc9;border-radius:12px;background:white}.faq-tabs{display:flex;flex-wrap:wrap;gap:8px;margin:18px 0}@media(max-width:767px){.cart-layout{grid-template-columns:1fr}}
 
 .delivery-fields{display:grid;grid-template-columns:1fr 1fr;gap:0 20px}.delivery-info{padding:16px;background:#f8f1df;border-radius:12px;overflow-wrap:anywhere}.story-page .shop-card{margin-top:24px}.delivery-fields input{width:100%;box-sizing:border-box}@media(max-width:767px){.delivery-fields{grid-template-columns:1fr}}
+
+/* Grid cards share a baseline; vertical spacing remains for stacked orders. */
+.shop-grid>.shop-card+.shop-card{margin-top:0}
+.shop-grid>.shop-card[id^="product-"]{display:flex;flex-direction:column;height:100%;box-sizing:border-box}
+.shop-card[id^="product-"]>a{display:block}
+.shop-card[id^="product-"] .product-picture{width:100%;aspect-ratio:4/3;box-sizing:border-box}
+.shop-card[id^="product-"] .product-picture svg{display:block;width:100%;height:100%;object-fit:contain}
+.shop-card[id^="product-"] h2{font-size:clamp(18px,1.8vw,23px);line-height:1.5;min-height:3em;margin:0;word-break:keep-all;overflow-wrap:anywhere;white-space:pre-line}
+.shop-card[id^="product-"]>p{min-height:1.8em;margin:12px 0;white-space:pre-line}
+.shop-card[id^="product-"] .shop-price{margin:8px 0;font-size:21px;line-height:1.5}
+.shop-card[id^="product-"] .shop-actions{margin-top:auto;padding-top:12px}
+.shop-card[id^="product-"] .shop-actions .button{min-height:44px;display:inline-flex;align-items:center;justify-content:center;box-sizing:border-box}
+@media(max-width:767px){.shop-card[id^="product-"] h2{font-size:21px;min-height:0}.shop-card[id^="product-"] .shop-actions{margin-top:8px}}
+
+.shop-subnav{display:flex;flex-wrap:wrap;gap:10px;margin:0 0 24px;padding-bottom:16px;border-bottom:1px solid #e9ddca}
+.shop-subnav a{padding:12px 22px;border:1px solid #e9ddca;border-radius:24px;background:#fffdf8;font-weight:600;font-size:14px}
+.shop-subnav a[aria-current="page"]{background:#fff0b4;border-color:#e3c36d;color:#493a27}
+.shop-subnav a:focus-visible{outline:2px solid #756345;outline-offset:3px}
+@media(max-width:767px){.shop-subnav a{flex:1;text-align:center;padding:12px}}
